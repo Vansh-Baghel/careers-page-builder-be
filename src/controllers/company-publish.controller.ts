@@ -19,12 +19,14 @@ export const publishCompany = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "No preview available to publish" });
   }
 
+  const preview = company.preview;
+
   // Copy preview fields to published fields
-  company.published_logo_url = company.preview.logo_url;
-  company.published_banner_url = company.preview.banner_url;
-  company.published_brand_color = company.preview.brand_color;
-  company.published_culture_video_url = company.preview.culture_video_url;
-  company.published_sections = company.preview.sections;
+  company.published_logo_url = preview.logo_url;
+  company.published_banner_url = preview.banner_url;
+  company.published_brand_color = preview.brand_color;
+  company.published_culture_video_url = preview.culture_video_url;
+  company.published_sections = preview.sections;
 
   await repo.save(company);
 

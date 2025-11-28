@@ -7,7 +7,6 @@ import { nanoid } from "nanoid";
 
 export const getOneJob = async (req: Request, res: Response) => {
   const { companySlug, jobSlug } = req.params;
-  console.log("🚀 ~ getOneJob ~ jobSlug:", jobSlug)
 
   const companyRepo = AppDataSource.getRepository(Company);
   const jobRepo = AppDataSource.getRepository(Job);
@@ -19,7 +18,6 @@ export const getOneJob = async (req: Request, res: Response) => {
   if (!company) {
     return res.status(404).json({ message: "Company Not Found" });
   }
-  console.log("🚀 ~ getOneJob ~ company:", company.id)
 
   const job = await jobRepo.findOne({
     where: { company: { id: company.id }, job_slug: jobSlug },

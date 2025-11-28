@@ -63,15 +63,6 @@ export const signup = async (req: Request, res: Response) => {
     relations: ["preview"],
   });
 
-  // If company does not exist -> create it
-  if (!company) {
-    company = companyRepo.create({
-      name: company_name,
-      slug,
-    });
-    await companyRepo.save(company);
-  }
-
   if (!company) {
     company = companyRepo.create({
       name: company_name,

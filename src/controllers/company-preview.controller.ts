@@ -27,15 +27,12 @@ export const updatePreview = async (req: Request, res: Response) => {
     relations: ["preview"],
   });
 
-  console.log("🚀 ~ updatePreview ~ company:", company);
-
   if (!company) {
     return res.status(404).json({ message: "Company Not Found" });
   }
 
   // Create preview row if missing
   let preview = company.preview;
-  console.log("🚀 ~ updatePreview ~ preview:", preview);
 
   if (!preview) {
     const preview = previewRepo.create({

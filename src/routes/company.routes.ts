@@ -7,7 +7,7 @@ const router = express.Router();
 
 // Recruiter
 router.get("/:companySlug/preview", auth, getPreview);
-router.get("/:companySlug/published", auth, getPublished);
+router.get("/:companySlug/get-published", auth, getPublished);
 router.patch("/:companySlug/edit", auth, updatePreview);
 
 export default router;
