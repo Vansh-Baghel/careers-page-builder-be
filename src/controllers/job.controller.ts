@@ -6,23 +6,25 @@ import slugify from "slugify";
 import { nanoid } from "nanoid";
 
 export const getOneJob = async (req: Request, res: Response) => {
-  const { company_slug, job_slug } = req.params;
+  const { companySlug, jobSlug } = req.params;
+  console.log("🚀 ~ getOneJob ~ jobSlug:", jobSlug)
 
   const companyRepo = AppDataSource.getRepository(Company);
   const jobRepo = AppDataSource.getRepository(Job);
 
   const company = await companyRepo.findOne({
-    where: { slug: company_slug },
+    where: { slug: companySlug },
   });
 
   if (!company) {
     return res.status(404).json({ message: "Company Not Found" });
   }
+  console.log("🚀 ~ getOneJob ~ company:", company.id)
 
   const job = await jobRepo.findOne({
-    where: { company: { id: company.id }, job_slug },
+    where: { company: { id: company.id }, job_slug: jobSlug },
   });
-
+  
   if (!job) {
     return res.status(404).json({ message: "Job Not Found" });
   }
@@ -32,7 +34,7 @@ export const getOneJob = async (req: Request, res: Response) => {
 
 export const getJobs = async (req: Request, res: Response) => {
   const { page = 1, limit = 10 } = req.query;
-  const { company_slug } = req.params;
+  const { companySlug } = req.params;
 
   const take = Number(limit);
   const currentPage = Number(page);
@@ -42,7 +44,7 @@ export const getJobs = async (req: Request, res: Response) => {
   const jobRepo = AppDataSource.getRepository(Job);
 
   const company = await companyRepo.findOne({
-    where: { slug: company_slug },
+    where: { slug: companySlug },
   });
 
   if (!company) {
@@ -103,7 +105,7 @@ export const createJob = async (req: Request, res: Response) => {
     }
 
     // Generate job slug
-    const job_slug = slugify(title, { lower: true }) + "-" + nanoid(6);
+    const jobSlug = slugify(title, { lower: true }) + "-" + nanoid(6);
 
     const job = jobRepo.create({
       company,
@@ -115,7 +117,7 @@ export const createJob = async (req: Request, res: Response) => {
       experience_level,
       job_type,
       salary,
-      job_slug,
+      job_slug: jobSlug,
       posted_days_ago: "0 days ago",
       is_published: true,
     });
