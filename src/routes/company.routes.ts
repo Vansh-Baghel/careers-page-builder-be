@@ -1,14 +1,14 @@
 import express from "express";
-import { updateDraft } from "../controllers/company-edit.controller";
-import { previewCompany } from "../controllers/company-preview.controller";
 import { publicCareers } from "../controllers/company-public.controller";
 import { auth } from "../middleware/auth";
+import { getPreview, updatePreview } from "../controllers/company-preview.controller";
 
 const router = express.Router();
 
 // Recruiter
-router.patch("/:companySlug/edit", auth, updateDraft);
-router.get("/:companySlug/preview", auth, previewCompany);
+router.get("/:companySlug/preview", auth, getPreview);
+router.patch("/:companySlug/edit", auth, updatePreview);
+// router.patch("/publish/:companySlug", auth, updateDraft);
 
 // Public
 router.get("/public/:companySlug/careers", publicCareers);

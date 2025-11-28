@@ -3,8 +3,9 @@ import { AppDataSource } from "../config/data-source";
 import { Recruiter } from "../entities/recruiter";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { Company } from "../entities/company";
+import { Company, Section } from "../entities/company";
 import slugify from "slugify";
+import { CompanyPreview } from "../entities/company-previews";
 
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -17,7 +18,8 @@ export const login = async (req: Request, res: Response) => {
 
   if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
-  if (!user.company) return res.status(400).json({ message: "No company associated" });
+  if (!user.company)
+    return res.status(400).json({ message: "No company associated" });
 
   const valid = await bcrypt.compare(password, user.password_hash);
   if (!valid) return res.status(400).json({ message: "Invalid credentials" });
@@ -27,6 +29,7 @@ export const login = async (req: Request, res: Response) => {
   return res.json({
     token,
     company_slug: user.company.slug,
+    company_name: user.company.name,
   });
 };
 
@@ -35,6 +38,7 @@ export const signup = async (req: Request, res: Response) => {
 
   const recruiterRepo = AppDataSource.getRepository(Recruiter);
   const companyRepo = AppDataSource.getRepository(Company);
+  const previewRepo = AppDataSource.getRepository(CompanyPreview);
 
   // Reject duplicate email
   const existingRecruiter = await recruiterRepo.findOne({ where: { email } });
@@ -48,15 +52,37 @@ export const signup = async (req: Request, res: Response) => {
     : slugify(company_name, { lower: true, strict: true });
 
   // Look for company
-  let company = await companyRepo.findOne({ where: { slug } });
+  let company = await companyRepo.findOne({
+    where: { slug },
+    relations: ["preview"],
+  });
 
   // If company does not exist -> create it
   if (!company) {
     company = companyRepo.create({
       name: company_name,
-      slug
+      slug,
     });
     await companyRepo.save(company);
+  }
+
+  if (!company) {
+    company = companyRepo.create({
+      name: company_name,
+      slug,
+    });
+    await companyRepo.save(company);
+
+    // Immediately create preview record
+    const preview = previewRepo.create({
+      company,
+      sections: [] as Section[],
+    });
+
+    await previewRepo.save(preview);
+
+    // attach preview so response is accurate
+    company.preview = preview;
   }
 
   // Create recruiter in the company
@@ -65,7 +91,7 @@ export const signup = async (req: Request, res: Response) => {
     name,
     email,
     password_hash,
-    company
+    company,
   });
   await recruiterRepo.save(recruiter);
 
@@ -75,7 +101,9 @@ export const signup = async (req: Request, res: Response) => {
   res.json({
     token,
     company_slug: company.slug,
-    message: company ? "Joined company successfully" : "Company created and joined"
+    company_name: company.name,
+    message: company
+      ? "Joined company successfully"
+      : "Company created and joined",
   });
 };
-
