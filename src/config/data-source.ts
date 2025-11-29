@@ -2,7 +2,12 @@ import "reflect-metadata";
 import { DataSource } from "typeorm";
 import path from "path";
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config({
+  path:
+    process.env.NODE_ENV === "production"
+      ? ".env" // Docker
+      : ".env.local", // Local dev
+});
 
 export const AppDataSource = new DataSource({
   type: "postgres",

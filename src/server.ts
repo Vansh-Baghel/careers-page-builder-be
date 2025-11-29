@@ -1,5 +1,10 @@
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config({
+  path:
+    process.env.NODE_ENV === "production"
+      ? ".env" // Docker
+      : ".env.local", // Local dev
+});
 
 import app from "./app";
 import { AppDataSource } from "./config/data-source";
